@@ -15,21 +15,10 @@ using namespace std;
 #include "opencv2/opencv.hpp"
 
 #include "lane.h"
-#include "uartcommander.h"
 #include "detector.h"
 
 using namespace cv;
    
-void sendMessage(SerialCommunication *serial, int8_t angle)
-{
-    UARTCommand command1, command2;
-    command1.speed = 0;
-    command1.wheelOrientation = angle;
-    command1.maxTime = 100;
-    command1.orientation= 0;
-    serial->sendCommand(&command1);
-}
-
 int main(int argc, char* argv[])
 {
     if (argc < 2)
@@ -41,18 +30,12 @@ int main(int argc, char* argv[])
     string config_path(argv[1]);
     
     string video_path;
-    string serial_port;
-    int serial_baud;
-    double k;
     try
     {
         libconfig::Config cfg;
         cfg.readFile(config_path.c_str());
 
         video_path = cfg.lookup("video.file").c_str();
-        //serial_port = cfg.lookup("serial.port").c_str();
-        //serial_baud = cfg.lookup("serial.baud");
-        k = cfg.lookup("controller.k");
     }
     catch(...)
     {
@@ -61,7 +44,6 @@ int main(int argc, char* argv[])
     }
     
     VideoCapture cap(video_path);
-    //SerialCommunication serial(serial_port, serial_baud);
     Lane lane(config_path);
     Detector detector(config_path);
     
@@ -81,9 +63,6 @@ int main(int argc, char* argv[])
             
             //draw lanes
             detector.drawLane(frame, lane);
-            
-            //sends message
-            //sendMessage(&serial, k*lane.getCurvature());
             
             //show image
             imshow("output", frame);
